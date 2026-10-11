@@ -3979,12 +3979,14 @@
   function acToggleSort() {
     const btn = document.getElementById('ac-sort-btn');
     const grid = document.getElementById('ac-grid');
-    const cards = Array.from(grid.children);
+    const cards = Array.from(grid.children).filter(c => c.classList && c.classList.contains('ac-card'));
     const toLowPrice = btn.textContent.includes('마감임박순');
     if (toLowPrice) {
       cards.sort((a, b) => {
-        const pa = parseInt(a.querySelector('.ac-price b').textContent.replace(/[^0-9]/g, ''));
-        const pb = parseInt(b.querySelector('.ac-price b').textContent.replace(/[^0-9]/g, ''));
+        const priceA = a.querySelector('.ac-price b');
+        const priceB = b.querySelector('.ac-price b');
+        const pa = parseInt((priceA ? priceA.textContent : '0').replace(/[^0-9]/g, '')) || 0;
+        const pb = parseInt((priceB ? priceB.textContent : '0').replace(/[^0-9]/g, '')) || 0;
         return pa - pb;
       });
       btn.innerHTML = '가격낮은순 <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
