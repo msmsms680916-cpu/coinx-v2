@@ -4362,5 +4362,24 @@ function acnToast(t){var el=document.getElementById('acn-toast');if(!el){el=docu
  },true);
 })();
 </script>
+<script>
+/* 보던 화면 기억하기: 폰이 페이지를 정리해도 다시 열면 보던 화면으로 복귀 (30분 이내) */
+(function(){
+ var KEY='coinxv2-resume',TTL=30*60*1000,SKIP=['signup','camera','purchase','payment','paydone'];
+ function save(){try{localStorage.setItem(KEY,JSON.stringify({s:stack.slice(),t:Date.now()}))}catch(e){}}
+ var sp=window.showPage;window.showPage=function(){var r=sp.apply(this,arguments);save();return r};
+ addEventListener('visibilitychange',function(){if(document.hidden)save()});
+ addEventListener('pagehide',save);
+ var d=null;try{d=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+ if(!d||!Array.isArray(d.s)||Date.now()-d.t>TTL)return;
+ var s=d.s.filter(function(id){return typeof id==='string'&&document.getElementById('page-'+id)});
+ while(s.length&&SKIP.indexOf(s[s.length-1])>=0)s.pop();
+ while(s.length&&s[0]==='signup')s.shift();
+ if(!s.length)return;
+ stack=s.slice();window.showPage(stack[stack.length-1]);
+ try{history.replaceState({v2s:s.slice(0,1)},'',location.href)}catch(e){}
+ if(s.length>1){var once=function(){removeEventListener('pointerdown',once,true);if(stack.join()!==s.join())return;for(var i=2;i<=s.length;i++){try{history.pushState({v2s:s.slice(0,i)},'',location.href)}catch(e){}}};addEventListener('pointerdown',once,true)}
+})();
+</script>
 </body>
 </html>
