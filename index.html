@@ -4568,5 +4568,22 @@ function acnToast(t){var el=document.getElementById('acn-toast');if(!el){el=docu
  },true);
 })();
 </script>
+<script>
+/* 저장 공간이 꽉 차면 오래된 등록 글의 사진부터 줄여서 저장 */
+(function(){
+ if(typeof window.coinxSaveArr!=='function')return;
+ const KEYS=['coinx_mk_items','coinx_ac_new_cards','coinx_ac_items','coinx_iq_msgs'];
+ function trim(level){
+  const keepN=[12,8,6][level],photoN=[4,1,0][level];
+  Object.keys(localStorage).forEach(k=>{if(!/^coinx_/.test(k))return;let a;try{a=JSON.parse(localStorage.getItem(k))}catch(e){return}if(!Array.isArray(a))return;
+   a=a.slice(0,keepN).map((x,i)=>{if(x&&typeof x==='object'&&i>=photoN){x=Object.assign({},x);['img','img2','photo','image'].forEach(f=>{if(typeof x[f]==='string'&&x[f].length>2000)x[f]=''})}return x});
+   try{localStorage.setItem(k,JSON.stringify(a))}catch(e){}});
+ }
+ window.coinxSaveArr=function(key,arr){
+  try{localStorage.setItem(key,JSON.stringify(arr));return}catch(e){}
+  for(let lv=0;lv<3;lv++){trim(lv);try{localStorage.setItem(key,JSON.stringify(arr.slice(0,[12,8,6][lv])));return}catch(e){}}
+ };
+})();
+</script>
 </body>
 </html>
