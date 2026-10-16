@@ -4421,6 +4421,8 @@ function acnToast(t){var el=document.getElementById('acn-toast');if(!el){el=docu
  .v2pc .cond.on{background:linear-gradient(90deg,#fbcf62,#f8b22e);border-color:#f8b22e;color:#1a1306}
  .v2pc .tx{position:absolute;z-index:12;display:flex;align-items:center;pointer-events:none;line-height:1;white-space:nowrap}
  .v2ct{position:absolute;z-index:3;display:flex;align-items:center;pointer-events:none;line-height:1.2;white-space:nowrap;overflow:hidden;font-weight:700;color:#1b1a2e;box-sizing:border-box}
+ .result-btn-row .cam-btn-primary[style*='0557fc']{color:#fff!important}
+ .result-btn-row .cam-btn-primary[style*='0557fc'] svg{stroke:#fff!important}
  .v2toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(20,20,26,.88);color:#fff;font-size:13px;padding:9px 16px;border-radius:20px;z-index:500;white-space:nowrap;pointer-events:none}
  `;
  document.head.appendChild(st);
@@ -4518,21 +4520,41 @@ function acnToast(t){var el=document.getElementById('acn-toast');if(!el){el=docu
   if(n===5)decorateResult();
   return r;
  };
+ const shrink=(src,cb)=>{if(!src)return cb('');const im=new Image();im.onload=()=>{const s=Math.min(1,480/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',.72))};im.onerror=()=>cb('');im.src=src};
  window.camGoToRegister=function(){
   const ci=info();
   const name=ci.year+' '+INFO.coin+' 동전';
   const price=String(INFO.price||'').trim()||'0';
-  const done=img=>{
-   try{mkAddItem({name,price,cat:'동전',desc:String(INFO.desc||''),img})}catch(e){}
+  shrink(PH[1],img=>shrink(PH[2],img2=>{
+   const item={name,price,cat:'동전',desc:String(INFO.desc||''),img,img2,year:ci.year,coin:INFO.coin,cond:INFO.cond,v2:1};
+   try{mkAddItem(item)}catch(e){try{item.img2='';mkAddItem(item)}catch(x){}}
    navigate('market');window.scrollTo(0,0);toast('보물장터에 등록되었습니다');
-  };
-  const src=PH[1];
-  if(!src){done('');return}
-  const im=new Image();
-  im.onload=()=>{const s=Math.min(1,420/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);done(c.toDataURL('image/jpeg',.72))};
-  im.onerror=()=>done('');
-  im.src=src;
+  }));
  };
+ /* --- 상세페이지: 등록한 보물의 사진·정보 반영 --- */
+ let DT0=null;
+ function dtFill(it){
+  const car=document.querySelector('#page-detail .dt-carousel'),spec=document.querySelector('#page-detail .dt-spec');
+  if(!car||!spec)return;
+  if(!DT0)DT0={car:car.innerHTML,spec:spec.innerHTML};
+  if(!it){car.innerHTML=DT0.car;spec.innerHTML=DT0.spec;return}
+  const ph=[it.img,it.img2].filter(Boolean);
+  car.innerHTML='<div class="dt-main-wrap"><img id="dt-main-img" src="'+(ph[0]||'')+'" alt="'+esc(it.name)+'" style="object-fit:cover;background:#eef0f5"><div class="dt-counter"><span id="dt-counter-num">1</span>/'+Math.max(1,ph.length)+'</div></div><div class="dt-thumbs">'+ph.map((p,i)=>'<button class="dt-thumb'+(i?'':' active')+'" id="dt-thumb-'+(i+1)+'" onclick="dtSelectImg('+(i+1)+')"><img src="'+p+'" alt=""></button>').join('')+'</div>';
+  const G={상:['상급 (양호함)','양호'],중:['중급 (보통)','보통'],하:['하급 (손상있음)','손상있음']}[it.cond]||['상급 (양호함)','양호'];
+  const row=(l,v)=>'<div class="dt-spec-row"><span class="dt-spec-label">'+l+'</span><span class="dt-spec-value">'+v+'</span></div>';
+  spec.innerHTML=row('제조연도',esc(it.year||'-'))+row('발행처','한국은행')+row('카테고리','한국 동전 &gt; '+esc(it.coin||''))+row('감정등급','<span class="dt-badge">'+G[0]+'</span>')+row('보존상태',G[1])+row('설명',esc(it.desc||'').replace(/\n/g,'<br>'));
+ }
+ const nav0=window.navigate;
+ window.navigate=function(id,data){
+  const r=nav0.apply(this,arguments);
+  if(id==='detail'){
+   let it=null;
+   if(data&&data.name&&window.MK_NEW_ITEMS){const pr=String(data.price||'').replace(/원$/,'');it=window.MK_NEW_ITEMS.find(x=>x.v2&&x.name===data.name&&String(x.price)===pr)||null}
+   try{dtFill(it)}catch(e){}
+  }
+  return r;
+ };
+
 })();
 
 </script>
