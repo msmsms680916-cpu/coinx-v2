@@ -27,6 +27,8 @@
   #gfab-back svg { width:22px; height:22px; stroke:#fff; fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
   #gfab-back:active { background:rgba(20,20,26,0.75); }
   .page.active { display:block; }
+  .iq-text-input,#hbc-input{flex:1 1 0!important;min-width:0!important;width:0!important;box-sizing:border-box}
+  .iq-input-bar{box-sizing:border-box}
   #mk-new-items{padding:0 1.6% 2px;box-sizing:border-box}
   #mk-new-items .mk-new-card{padding:0 1.2% 8px!important}
   #mk-new-items .mk-new-thumb{aspect-ratio:1/.82;border-radius:9px 9px 0 0;border:1px solid #e3e6ee;border-bottom:0;background:#f3f4f7}
@@ -4557,6 +4559,14 @@ function acnToast(t){var el=document.getElementById('acn-toast');if(!el){el=docu
 
 })();
 
+</script>
+<script>
+/* 한글 입력 중 Enter로 반쯤 조합된 글자가 전송되지 않도록 */
+(function(){
+ document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&(e.isComposing||e.keyCode===229)&&e.target&&(e.target.id==='iq-text-input'||e.target.id==='hbc-input'||e.target.id==='snspost-comment-input')){e.stopImmediatePropagation();e.preventDefault()}
+ },true);
+})();
 </script>
 </body>
 </html>
